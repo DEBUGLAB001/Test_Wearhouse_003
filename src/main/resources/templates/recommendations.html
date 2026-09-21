@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations Engine — ShopSphere Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>ShopSphere Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/products" class="nav-link">Products</a></li>
+                <li><a href="/orders" class="nav-link">Orders &amp; Queue</a></li>
+                <li><a href="/inventory" class="nav-link">Inventory</a></li>
+                <li><a href="/routing" class="nav-link">Delivery Routing</a></li>
+                <li><a href="/recommendations" class="nav-link active">Recommendations</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Personalized Recommendation Engine</h1>
+                <p class="page-subtitle">Graph-based co-purchase and item affinity clustering.</p>
+            </div>
+        </div>
+
+        <div class="card-glass" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">Explore Co-Purchased Items</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Select a base product to traverse co-purchase associations.
+            </p>
+            <form method="get" action="/recommendations" style="display: flex; gap: 1rem; align-items: center;">
+                <select name="productId" class="form-input" style="min-width: 320px;" required>
+                    <option value="">Select a Base Product...</option>
+                    <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name + ' (₹' + p.price + ')'}" th:selected="${selectedProductId == p.id}">Product</option>
+                </select>
+                <button type="submit" class="btn-primary">Generate Recommendations</button>
+            </form>
+        </div>
+
+        <div th:if="${baseProduct != null}" style="margin-bottom: 2rem;">
+            <div class="card-glass" style="margin-bottom: 1.5rem; border-color: rgba(99, 102, 241, 0.4);">
+                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Base Product</div>
+                <h2 style="font-size: 1.4rem; color: #fff; margin-top: 0.25rem;" th:text="${baseProduct.name}">Product Name</h2>
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                    <span>Brand: <strong style="color: #fff;" th:text="${baseProduct.brand}">Brand</strong></span>
+                    <span>Price: <strong style="color: var(--accent-emerald);" th:text="'₹' + ${#numbers.formatDecimal(baseProduct.price, 1, 2)}">₹0.00</strong></span>
+                    <span>SKU: <strong style="color: #fff;" th:text="${baseProduct.sku}">SKU</strong></span>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 1rem;">Recommended Co-Purchased Products</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+                <div class="card-glass" th:each="rec : ${recommendations}" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <span class="badge badge-priority" style="margin-bottom: 0.5rem;" th:text="${rec.category != null ? rec.category.name : 'Affinity'}">Affinity</span>
+                        <h4 style="font-size: 1rem; color: #fff; margin: 0.4rem 0;" th:text="${rec.name}">Recommended Product</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);" th:text="${rec.brand}">Brand</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-card);">
+                        <span style="font-size: 1.1rem; font-weight: 700; color: var(--accent-emerald);" th:text="'₹' + ${#numbers.formatDecimal(rec.price, 1, 2)}">₹0.00</span>
+                        <span style="font-size: 0.85rem; color: var(--accent-cyan);">Co-Purchased</span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(recommendations)}" class="card-glass" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                No co-purchased recommendations currently mapped for this product.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

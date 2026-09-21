@@ -1,0 +1,14 @@
+{
+  "runtime_type": "java-spring",
+  "image": "maven:3.9-eclipse-temurin-17",
+  "install": "./mvnw clean install -DskipTests",
+  "start": "./mvnw spring-boot:run",
+  "test": "./mvnw test",
+  "port": 8080,
+  "resources": {
+    "cpu": 2,
+    "memory": 2048,
+    "disk": 4096,
+    "timeout": 60
+  }
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Inventory &amp; Bin Search — ShopSphere Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>ShopSphere Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/products" class="nav-link">Products</a></li>
+                <li><a href="/orders" class="nav-link">Orders &amp; Queue</a></li>
+                <li><a href="/inventory" class="nav-link active">Inventory</a></li>
+                <li><a href="/routing" class="nav-link">Delivery Routing</a></li>
+                <li><a href="/recommendations" class="nav-link">Recommendations</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Warehouse Inventory &amp; Bin Locator</h1>
+                <p class="page-subtitle">Binary search-indexed inventory lookups across multi-tier warehouse aisles and storage bins.</p>
+            </div>
+        </div>
+
+        <!-- Binary Search Form -->
+        <div class="card-glass" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">Fast Inventory Search (O(log N))</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Search warehouse stock location by Product ID using sorted binary search.
+            </p>
+            <form method="get" action="/inventory" style="display: flex; gap: 1rem; align-items: center;">
+                <input type="number" name="searchProductId" th:value="${searchProductId}" placeholder="Enter Product ID (e.g. 50, 150)" class="form-input" style="width: 280px;" required>
+                <button type="submit" class="btn-primary">Search Inventory</button>
+                <a href="/inventory" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">Clear</a>
+            </form>
+
+            <div th:if="${searched}" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-card);">
+                <div th:if="${searchResult != null}" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 1.25rem;">
+                    <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">Product Located in Warehouse</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 0.75rem;">
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Product</span>
+                            <div style="font-weight: 600;" th:text="${searchResult.product.name}">Product Name</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Warehouse Hub</span>
+                            <div style="font-weight: 600;" th:text="${searchResult.warehouse.name}">WH Hub</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Aisle / Bin Location</span>
+                            <div style="font-weight: 600; color: var(--accent-cyan);" th:text="${searchResult.aisle + ' — ' + searchResult.bin}">Aisle-1 / Bin-A</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Available Quantity</span>
+                            <div style="font-weight: 700; font-size: 1.1rem;" th:text="${searchResult.quantity}">100</div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${searchResult == null}" style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-sm); padding: 1rem;">
+                    <span style="color: var(--accent-rose); font-weight: 600;">Not Found:</span>
+                    <span style="color: var(--text-secondary);">No inventory record found for Product ID <strong th:text="${searchProductId}">0</strong> in warehouse storage.</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <!-- Low Stock Items -->
+            <div class="card-glass">
+                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 1rem;">Low-Stock Threshold Alerts</h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Hub</th>
+                                <th>Stock</th>
+                                <th>Min Safe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${lowStockItems}">
+                                <td th:text="${item.product.name}" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Product</td>
+                                <td th:text="${item.warehouse.code}">WH-DELHI</td>
+                                <td style="color: var(--accent-rose); font-weight: 700;" th:text="${item.quantity}">5</td>
+                                <td th:text="${item.minThreshold}">10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Active Warehouses -->
+            <div class="card-glass">
+                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 1rem;">Active Warehouse Facilities</h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Facility Name</th>
+                                <th>City</th>
+                                <th>Capacity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="wh : ${warehouses}">
+                                <td th:text="${wh.code}" style="font-family: monospace; font-weight: 600; color: var(--accent-cyan);">WH-01</td>
+                                <td th:text="${wh.name}">Name</td>
+                                <td th:text="${wh.city}">City</td>
+                                <td th:text="${#numbers.formatDecimal(wh.capacity, 1, 'COMMA', 0, 'POINT')}">100,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

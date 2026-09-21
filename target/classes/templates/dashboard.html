@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSphere Pro — Enterprise Warehouse &amp; Fulfillment</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>ShopSphere Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link active">Dashboard</a></li>
+                <li><a href="/products" class="nav-link">Products</a></li>
+                <li><a href="/orders" class="nav-link">Orders &amp; Queue</a></li>
+                <li><a href="/inventory" class="nav-link">Inventory</a></li>
+                <li><a href="/routing" class="nav-link">Delivery Routing</a></li>
+                <li><a href="/recommendations" class="nav-link">Recommendations</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Warehouse &amp; Operations Command</h1>
+                <p class="page-subtitle">Real-time inventory metrics, order processing, and fulfillment telemetry.</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">₹</div>
+                <div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-val" th:text="'₹' + ${#numbers.formatDecimal(summary.totalRevenue, 1, 'COMMA', 2, 'POINT')}">₹0.00</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(6, 182, 212, 0.2); color: #22d3ee;">📦</div>
+                <div>
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-val" th:text="${summary.totalOrders}">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">⏳</div>
+                <div>
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-val" th:text="${summary.pendingOrders}">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">🏷️</div>
+                <div>
+                    <div class="stat-label">Active Products</div>
+                    <div class="stat-val" th:text="${summary.totalProducts}">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(244, 63, 94, 0.2); color: #fb7185;">⚠️</div>
+                <div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                    <div class="stat-val" th:text="${summary.lowStockCount}">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa;">🏭</div>
+                <div>
+                    <div class="stat-label">Warehouses</div>
+                    <div class="stat-val" th:text="${summary.activeWarehouses}">8</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card-glass">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: #fff;">Recent Orders Telemetry</h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${recentOrders}">
+                                <td th:text="${order.orderNumber}" style="font-family: monospace; font-weight: 600;">ORD-12345</td>
+                                <td th:text="${order.customer.name}">Customer Name</td>
+                                <td>
+                                    <span th:if="${order.priority.name() == 'EXPRESS'}" class="badge badge-express">Express</span>
+                                    <span th:if="${order.priority.name() == 'PRIORITY'}" class="badge badge-priority">Priority</span>
+                                    <span th:if="${order.priority.name() == 'STANDARD'}" class="badge badge-standard">Standard</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success" th:text="${order.status}">PENDING</span>
+                                </td>
+                                <td th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-glass">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: #fff;">Critical Stock Alerts</h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${lowStockItems}">
+                                <td th:text="${item.product.name}" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Product</td>
+                                <td style="color: var(--accent-rose); font-weight: 700;" th:text="${item.quantity}">0</td>
+                                <td style="font-size: 0.8rem; color: var(--text-muted);" th:text="${item.aisle + ' / ' + item.bin}">A-1 / B-2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

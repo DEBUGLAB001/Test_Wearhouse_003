@@ -1,0 +1,8 @@
+com\shopsphere\ChallengeTestRunner$BugResult.class
+com\shopsphere\DeliveryRouteTests.class
+com\shopsphere\RecommendationTests.class
+com\shopsphere\OrderQueueTests.class
+com\shopsphere\AuthTests.class
+com\shopsphere\ProductTests.class
+com\shopsphere\InventorySearchTests.class
+com\shopsphere\ChallengeTestRunner.class

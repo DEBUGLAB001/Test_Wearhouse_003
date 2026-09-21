@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Routing &amp; Dijkstra Optimizer — ShopSphere Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>ShopSphere Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/products" class="nav-link">Products</a></li>
+                <li><a href="/orders" class="nav-link">Orders &amp; Queue</a></li>
+                <li><a href="/inventory" class="nav-link">Inventory</a></li>
+                <li><a href="/routing" class="nav-link active">Delivery Routing</a></li>
+                <li><a href="/recommendations" class="nav-link">Recommendations</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Delivery Route Optimization Engine</h1>
+                <p class="page-subtitle">Dijkstra shortest path algorithm calculating optimal warehouse-to-customer logistics routes.</p>
+            </div>
+        </div>
+
+        <div class="card-glass" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem;">Calculate Shortest Delivery Path</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Computes minimum road distance and intermediate transit hubs using weighted graph relaxation.
+            </p>
+            <form method="get" action="/routing" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Origin Hub / Warehouse</label>
+                    <select name="sourceNode" class="form-input" style="min-width: 220px;" required>
+                        <option value="">Select Origin Node</option>
+                        <option th:each="node : ${nodes}" th:value="${node}" th:text="${node}" th:selected="${sourceNode == node}">NODE</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Destination Delivery Node</label>
+                    <select name="targetNode" class="form-input" style="min-width: 220px;" required>
+                        <option value="">Select Target Node</option>
+                        <option th:each="node : ${nodes}" th:value="${node}" th:text="${node}" th:selected="${targetNode == node}">NODE</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn-primary">Compute Route</button>
+                    <a href="/routing" style="margin-left: 0.5rem; color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">Reset</a>
+                </div>
+            </form>
+
+            <div th:if="${calculatedRoute != null}" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-card);">
+                <div th:if="${!#lists.isEmpty(calculatedRoute.path)}" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius-sm); padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 style="color: var(--accent-cyan);">Optimal Delivery Path Computed</h4>
+                        <span style="font-size: 1.2rem; font-weight: 700; color: #fff;" th:text="${calculatedRoute.totalDistanceKm + ' km'}">240 km</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Transit Waypoints:</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <span th:each="waypoint, iter : ${calculatedRoute.path}">
+                            <span class="badge badge-standard" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" th:text="${waypoint}">NODE</span>
+                            <span th:if="${!iter.last}" style="color: var(--text-muted); margin: 0 0.25rem;">&rarr;</span>
+                        </span>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(calculatedRoute.path)}" style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-sm); padding: 1rem;">
+                    <span style="color: var(--accent-rose); font-weight: 600;">No Route:</span>
+                    <span style="color: var(--text-secondary);">No reachable path could be determined between selected nodes.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-glass">
+            <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 1rem;">Regional Warehouse Node Directory</h3>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Hub Code</th>
+                            <th>Warehouse Facility</th>
+                            <th>City</th>
+                            <th>Routing Network Node ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="wh : ${warehouses}">
+                            <td th:text="${wh.code}" style="font-family: monospace; font-weight: 600;">WH-DELHI</td>
+                            <td th:text="${wh.name}">Name</td>
+                            <td th:text="${wh.city}">City</td>
+                            <td><span class="badge badge-standard" th:text="${wh.locationNodeId}">NODE_DELHI</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

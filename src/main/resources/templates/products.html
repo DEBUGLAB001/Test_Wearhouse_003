@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Catalog — ShopSphere Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar-custom">
+        <div class="navbar-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>ShopSphere Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/products" class="nav-link active">Products</a></li>
+                <li><a href="/orders" class="nav-link">Orders &amp; Queue</a></li>
+                <li><a href="/inventory" class="nav-link">Inventory</a></li>
+                <li><a href="/routing" class="nav-link">Delivery Routing</a></li>
+                <li><a href="/recommendations" class="nav-link">Recommendations</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Product Catalog</h1>
+                <p class="page-subtitle">Manage items, filter inventory by price bands, brands, categories, and ratings.</p>
+            </div>
+        </div>
+
+        <div class="card-glass" style="margin-bottom: 2rem;">
+            <form method="get" action="/products" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Min Price (₹)</label>
+                    <input type="number" step="any" name="minPrice" th:value="${minPrice}" placeholder="1000" class="form-input" style="width: 130px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Max Price (₹)</label>
+                    <input type="number" step="any" name="maxPrice" th:value="${maxPrice}" placeholder="5000" class="form-input" style="width: 130px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Category</label>
+                    <select name="categoryId" class="form-input" style="min-width: 180px;">
+                        <option value="">All Categories</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}" th:selected="${selectedCategory == cat.id}">Category</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Brand</label>
+                    <select name="brand" class="form-input" style="min-width: 150px;">
+                        <option value="">All Brands</option>
+                        <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${selectedBrand == b}">Brand</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Min Rating</label>
+                    <input type="number" step="0.1" min="1" max="5" name="minRating" th:value="${minRating}" placeholder="4.0" class="form-input" style="width: 110px;">
+                </div>
+                <div>
+                    <button type="submit" class="btn-primary">Apply Filters</button>
+                    <a href="/products" style="margin-left: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-glass">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.1rem; color: #fff;">
+                    Products Found: <span style="color: var(--accent-cyan);" th:text="${productPage.totalElements}">500</span>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
+                        (Showing <span th:text="${productPage.content.size()}">20</span> products on page <span th:text="${currentPage + 1}">1</span> of <span th:text="${productPage.totalPages}">25</span>)
+                    </span>
+                </h3>
+            </div>
+
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Brand</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="product : ${productPage.content}">
+                            <td th:text="${product.sku}" style="font-family: monospace; color: var(--text-muted);">SKU-0001</td>
+                            <td th:text="${product.name}" style="font-weight: 600;">Product Name</td>
+                            <td th:text="${product.category != null ? product.category.name : '-'}">Category</td>
+                            <td th:text="${product.brand}">Brand</td>
+                            <td th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 2)}" style="font-weight: 700; color: var(--accent-emerald);">₹1,299.00</td>
+                            <td>⭐ <span th:text="${product.rating}">4.5</span></td>
+                            <td th:text="${product.stockQuantity}">120</td>
+                        </tr>
+                        <tr th:if="${productPage.content.isEmpty()}">
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No products match the selected criteria.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <ul class="pagination" th:if="${productPage.totalPages > 1}">
+                <li class="page-item" th:if="${currentPage > 0}">
+                    <a th:href="@{/products(page=${currentPage - 1}, size=${pageSize}, minPrice=${minPrice}, maxPrice=${maxPrice}, categoryId=${selectedCategory}, brand=${selectedBrand}, minRating=${minRating})}">&laquo; Prev</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, (productPage.totalPages > 10 ? 9 : productPage.totalPages - 1))}" th:classappend="${i == currentPage} ? ' active' : ''">
+                    <a th:href="@{/products(page=${i}, size=${pageSize}, minPrice=${minPrice}, maxPrice=${maxPrice}, categoryId=${selectedCategory}, brand=${selectedBrand}, minRating=${minRating})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:if="${currentPage + 1 < productPage.totalPages}">
+                    <a th:href="@{/products(page=${currentPage + 1}, size=${pageSize}, minPrice=${minPrice}, maxPrice=${maxPrice}, categoryId=${selectedCategory}, brand=${selectedBrand}, minRating=${minRating})}">Next &raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
